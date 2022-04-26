@@ -44,6 +44,34 @@ def main():
             })
         return jsonify(response_json)
 
+    @app.route("/rating/<group>")
+    def rating_search(group):
+        levels = {
+            'children': ['G'],
+            'family': ['G', 'PG', 'PG-13'],
+            'adult': ['R', 'NC-17'],
+        }
+        if group in levels:
+            level = '\", \"'.join(levels[group])
+            level = f'\"{level}\"'
+        else:
+            return jsonify([])
+
+        query = f"""
+                      SELECT title, rating, description 
+                      FROM netflix
+                      WHERE rating IN ({level})
+              """
+        response = utils.bd_connect(query)
+        response_json = []
+        for film in response:
+            response_json.append({
+                "title": film[0],
+                "rating": film[1],
+                "description": film[2],
+            })
+        return jsonify(response_json)
+
     app.run(debug=True)
 
 
