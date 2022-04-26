@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-import utils
+from utils import bd_connect
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
                 ORDER BY release_year DESC
                 LIMIT 1
         """
-        response = utils.bd_connect(query)[0]
+        response = bd_connect(query)[0]
         response_json = {
             "title": response[0],
             "country": response[1],
@@ -35,7 +35,7 @@ def main():
                     ORDER BY release_year
                     LIMIT 100
             """
-        response = utils.bd_connect(query)
+        response = bd_connect(query)
         response_json = []
         for film in response:
             response_json.append({
@@ -62,13 +62,31 @@ def main():
                       FROM netflix
                       WHERE rating IN ({level})
               """
-        response = utils.bd_connect(query)
+        response = bd_connect(query)
         response_json = []
         for film in response:
             response_json.append({
                 "title": film[0],
                 "rating": film[1],
                 "description": film[2],
+            })
+        return jsonify(response_json)
+
+    @app.route("/genre/<genre>")
+    def genre_search(genre):
+        query = f"""
+                    SELECT title, description
+                    FROM netflix
+                    WHERE listed_in LIKE "%{genre}%"
+                    ORDER BY release_year DESC
+                    LIMIT 10
+            """
+        response = bd_connect(query)
+        response_json = []
+        for film in response:
+            response_json.append({
+                "title": film[0],
+                "description": film[1].strip(),
             })
         return jsonify(response_json)
 
