@@ -1,5 +1,4 @@
 import sqlite3
-from flask import jsonify
 
 
 def bd_connect(query):
@@ -10,13 +9,12 @@ def bd_connect(query):
         return result
 
 
-
-def get_actors(name_1="Jack Black", name_2="Dustin Hoffman"):
+def get_actors(name_1, name_2):
     query = f"""
-        SELECT "cast"
-        FROM netflix
-        WHERE "cast" LIKE "%{name_1}%"
-        AND "cast" LIKE "%{name_2}%"
+                SELECT "cast"
+                FROM netflix
+                WHERE "cast" LIKE "%{name_1}%"
+                AND "cast" LIKE "%{name_2}%"
         """
     response = bd_connect(query)
     actors = []
@@ -28,4 +26,27 @@ def get_actors(name_1="Jack Black", name_2="Dustin Hoffman"):
             if actors.count(i) > 2:
                 result.append(i)
     result = set(result)
+    return result
 
+
+def get_films(type_film, release_year, genre):
+    query = f"""
+                SELECT title, description, "type"
+                FROM netflix
+                WHERE "type" = "{type_film}"
+                AND release_year = "{release_year}"
+                AND listed_in LIKE '%{genre}%'
+    """
+    response = bd_connect(query)
+    response_json = []
+    for film in response:
+        response_json.append({
+            "title": film[0],
+            "description": film[1],
+            "type": film[2],
+        })
+    return response_json
+
+
+print(get_actors("Jack Black", "Dustin Hoffman"))
+print(get_films("Movie", 2016, "Dramas"))
