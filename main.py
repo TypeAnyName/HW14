@@ -16,15 +16,18 @@ def main():
                 ORDER BY release_year DESC
                 LIMIT 1
         """
-        response = bd_connect(query)[0]
-        response_json = {
-            "title": response[0],
-            "country": response[1],
-            "release_year": response[2],
-            "genre": response[3],
-            "description": response[4].strip(),
-        }
-        return jsonify(response_json)
+        try:
+            response = bd_connect(query)[0]
+            response_json = {
+                "title": response[0],
+                "country": response[1],
+                "release_year": response[2],
+                "genre": response[3],
+                "description": response[4].strip(),
+            }
+            return jsonify(response_json)
+        except IndexError:
+            return "фильм не найден"
 
     @app.route("/movie/<int:start>/to/<int:end>")
     def release_year_search(start, end):
@@ -36,13 +39,16 @@ def main():
                     LIMIT 100
             """
         response = bd_connect(query)
-        response_json = []
-        for film in response:
-            response_json.append({
-                "title": film[0],
-                "release_year": film[1],
-            })
-        return jsonify(response_json)
+        if len(response) > 0:
+            response_json = []
+            for film in response:
+                response_json.append({
+                    "title": film[0],
+                    "release_year": film[1],
+                })
+            return jsonify(response_json)
+        else:
+            return "В этот период фильмов не найдено"
 
     @app.route("/rating/<group>")
     def rating_search(group):
@@ -55,7 +61,7 @@ def main():
             level = '\", \"'.join(levels[group])
             level = f'\"{level}\"'
         else:
-            return jsonify([])
+            return "Рейтинг не найден"
 
         query = f"""
                       SELECT title, rating, description 
@@ -82,13 +88,16 @@ def main():
                     LIMIT 10
             """
         response = bd_connect(query)
-        response_json = []
-        for film in response:
-            response_json.append({
-                "title": film[0],
-                "description": film[1].strip(),
-            })
-        return jsonify(response_json)
+        if len(response) > 0:
+            response_json = []
+            for film in response:
+                response_json.append({
+                    "title": film[0],
+                    "description": film[1].strip(),
+                })
+            return jsonify(response_json)
+        else:
+            return "Жанр не найден"
 
     app.run(debug=True)
 
